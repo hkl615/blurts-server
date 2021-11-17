@@ -15,6 +15,7 @@ const fetch = require("node-fetch");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
 const { readFile } = require("fs/promises");
+const webshot = require("webshot-node");
 
 const EXPERIMENTS_ENABLED = AppConstants.EXPERIMENT_ACTIVE === "1";
 const {
@@ -866,49 +867,110 @@ async function getRemovePage(req, res) {
     }
     removeData = await getRemoveDashData(user.kid);
 
+    const experimentFlags = getExperimentFlags(req, EXPERIMENTS_ENABLED);
+
+    let lastAddedEmail = null;
+
+    req.session.user = await DB.setBreachesLastShownNow(user);
+    if (req.session.lastAddedEmail) {
+      lastAddedEmail = req.session.lastAddedEmail;
+      req.session["lastAddedEmail"] = null;
+    }
+
+    let partialString;
+
+    if (show_form) {
+      partialString = "dashboards/remove-form";
+    } else {
+      partialString = "dashboards/remove-dashboard";
+    }
+
     if (!show_form && removeData) {
+      let isWritten = false;
       removeData.forEach((removeItem) => {
         removeItem.update_status = FormUtils.convertTimestamp(
           removeItem.updated_at
         );
+        if (
+          removeItem.status !== REMOVAL_STATUS["COMPLETE"].id &&
+          removeItem.url &&
+          removeItem.url.length &&
+          !isWritten
+        ) {
+          isWritten = true;
+          //if we have a URL, grab a screenshot
+          const removalURL = removeItem.url[0];
+          const renderStream = webshot(removalURL);
+          // const file = fs.createWriteStream("screenshot.png", { //works in conjunction with code below to write a file to disk
+          //   encoding: "binary",
+          // });
+          let imgStream = `data:image/png;base64,`;
+          renderStream.on("data", function (data) {
+            //console.log("render data", data);
+            imgStream += Buffer.from(data).toString("base64");
+            //file.write(data.toString('binary'), 'binary'); //works in conjunction with code above to write a file to disk
+            //imgStream += data.toString("binary");
+          });
+
+          renderStream.on("end", function () {
+            removeItem.imgStream = imgStream;
+            //console.log("imgStream", imgStream);
+            res.render("dashboards", {
+              title: req.fluentFormat("Firefox Monitor"),
+              csrfToken: req.csrfToken(),
+              lastAddedEmail,
+              verifiedEmails,
+              unverifiedEmails,
+              countries,
+              usStates,
+              userHasSignedUpForRemoveData,
+              removeData,
+              removeAcctInfo,
+              supportedLocalesIncludesEnglish,
+              whichPartial: partialString,
+              experimentFlags,
+              utmOverrides,
+            });
+          });
+        }
       });
     }
   }
 
-  const experimentFlags = getExperimentFlags(req, EXPERIMENTS_ENABLED);
+  // const experimentFlags = getExperimentFlags(req, EXPERIMENTS_ENABLED);
 
-  let lastAddedEmail = null;
+  // let lastAddedEmail = null;
 
-  req.session.user = await DB.setBreachesLastShownNow(user);
-  if (req.session.lastAddedEmail) {
-    lastAddedEmail = req.session.lastAddedEmail;
-    req.session["lastAddedEmail"] = null;
-  }
+  // req.session.user = await DB.setBreachesLastShownNow(user);
+  // if (req.session.lastAddedEmail) {
+  //   lastAddedEmail = req.session.lastAddedEmail;
+  //   req.session["lastAddedEmail"] = null;
+  // }
 
-  let partialString;
+  // let partialString;
 
-  if (show_form) {
-    partialString = "dashboards/remove-form";
-  } else {
-    partialString = "dashboards/remove-dashboard";
-  }
+  // if (show_form) {
+  //   partialString = "dashboards/remove-form";
+  // } else {
+  //   partialString = "dashboards/remove-dashboard";
+  // }
 
-  res.render("dashboards", {
-    title: req.fluentFormat("Firefox Monitor"),
-    csrfToken: req.csrfToken(),
-    lastAddedEmail,
-    verifiedEmails,
-    unverifiedEmails,
-    countries,
-    usStates,
-    userHasSignedUpForRemoveData,
-    removeData,
-    removeAcctInfo,
-    supportedLocalesIncludesEnglish,
-    whichPartial: partialString,
-    experimentFlags,
-    utmOverrides,
-  });
+  // res.render("dashboards", {
+  //   title: req.fluentFormat("Firefox Monitor"),
+  //   csrfToken: req.csrfToken(),
+  //   lastAddedEmail,
+  //   verifiedEmails,
+  //   unverifiedEmails,
+  //   countries,
+  //   usStates,
+  //   userHasSignedUpForRemoveData,
+  //   removeData,
+  //   removeAcctInfo,
+  //   supportedLocalesIncludesEnglish,
+  //   whichPartial: partialString,
+  //   experimentFlags,
+  //   utmOverrides,
+  // });
 }
 
 async function getRemoveConfirmationPage(req, res) {

@@ -112,6 +112,9 @@
             >{{getString "remove-result-link-title"}} {{incrementedIndex @index}}</a>
           </li>
           {{/each}}
+          {{#if this.imgStream}}
+          <img src="{{this.imgStream}}">
+          {{/if}}
           </ul>
         </p>
       </li>

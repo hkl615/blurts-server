@@ -48,7 +48,8 @@
     "redis": "3.1.1",
     "sass": "^1.42.1",
     "sns-validator": "0.3.4",
-    "uuid": "3.4.0"
+    "uuid": "3.4.0",
+    "webshot-node": "^0.18.2"
   },
   "devDependencies": {
     "@wdio/cli": "5.23.0",
