@@ -67,7 +67,12 @@
       </div>
     </div>
   </div>
-  <div class="remove-dash-results-details-container">
+  <div class="remove-dash-results-details-container flx">
+    <div class="remove-dash-result-link-img-container">
+      {{#if this.imgStream}}
+        <img src="{{this.imgStream}}">
+      {{/if}}
+    </div>
     <ul class="remove-dash-results-details-list">
       {{#if this.update_status}}
         <li class="remove-dash-results-details-item mobile-only">
@@ -101,7 +106,7 @@
           {{getString "remove-result-link"}}
           {{> removal/removal-question-trigger modal="modal-remove-link" alt="About result link"}}
         </p>
-        <p class="remove-dash-results-detail flx">
+        <div class="remove-dash-results-detail flx">
           <ul>
           {{#each this.url}}
           <li class="remove-dash-results-link-item">
@@ -112,11 +117,8 @@
             >{{getString "remove-result-link-title"}} {{incrementedIndex @index}}</a>
           </li>
           {{/each}}
-          {{#if this.imgStream}}
-          <img src="{{this.imgStream}}">
-          {{/if}}
           </ul>
-        </p>
+        </div>
       </li>
       <li class="remove-dash-results-details-item flx flx-col align-start">
         <p class="remove-dash-results-detail-title">
@@ -140,5 +142,6 @@
         </li>
       {{/ifCompare}}
     </ul>
+    
   </div>
 </li>

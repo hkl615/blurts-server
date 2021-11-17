@@ -167,4 +167,11 @@
       margin-top: 0;
     }
   }
+  &-result-link-img-container {
+    width: 250px;
+    float: right;
+    img {
+      max-width: 100%;
+    }
+  }
 }

@@ -901,15 +901,9 @@ async function getRemovePage(req, res) {
           //if we have a URL, grab a screenshot
           const removalURL = removeItem.url[0];
           const renderStream = webshot(removalURL);
-          // const file = fs.createWriteStream("screenshot.png", { //works in conjunction with code below to write a file to disk
-          //   encoding: "binary",
-          // });
-          let imgStream = `data:image/png;base64,`;
+          let imgStream = "data:image/png;base64,";
           renderStream.on("data", function (data) {
-            //console.log("render data", data);
             imgStream += Buffer.from(data).toString("base64");
-            //file.write(data.toString('binary'), 'binary'); //works in conjunction with code above to write a file to disk
-            //imgStream += data.toString("binary");
           });
 
           renderStream.on("end", function () {
