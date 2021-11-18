@@ -886,85 +886,65 @@ async function getRemovePage(req, res) {
     }
 
     if (!show_form && removeData) {
-      let isWritten = false;
       removeData.forEach((removeItem) => {
         removeItem.update_status = FormUtils.convertTimestamp(
           removeItem.updated_at
         );
-        if (
-          removeItem.status !== REMOVAL_STATUS["COMPLETE"].id &&
-          removeItem.url &&
-          removeItem.url.length &&
-          !isWritten
-        ) {
-          isWritten = true;
-          //if we have a URL, grab a screenshot
-          const removalURL = removeItem.url[0];
-          const renderStream = webshot(removalURL);
-          let imgStream = "data:image/png;base64,";
-          renderStream.on("data", function (data) {
-            imgStream += Buffer.from(data).toString("base64");
-          });
-
-          renderStream.on("end", function () {
-            removeItem.imgStream = imgStream;
-            //console.log("imgStream", imgStream);
-            res.render("dashboards", {
-              title: req.fluentFormat("Firefox Monitor"),
-              csrfToken: req.csrfToken(),
-              lastAddedEmail,
-              verifiedEmails,
-              unverifiedEmails,
-              countries,
-              usStates,
-              userHasSignedUpForRemoveData,
-              removeData,
-              removeAcctInfo,
-              supportedLocalesIncludesEnglish,
-              whichPartial: partialString,
-              experimentFlags,
-              utmOverrides,
-            });
-          });
-        }
       });
     }
   }
 
-  // const experimentFlags = getExperimentFlags(req, EXPERIMENTS_ENABLED);
+  const experimentFlags = getExperimentFlags(req, EXPERIMENTS_ENABLED);
 
-  // let lastAddedEmail = null;
+  let lastAddedEmail = null;
 
-  // req.session.user = await DB.setBreachesLastShownNow(user);
-  // if (req.session.lastAddedEmail) {
-  //   lastAddedEmail = req.session.lastAddedEmail;
-  //   req.session["lastAddedEmail"] = null;
-  // }
+  req.session.user = await DB.setBreachesLastShownNow(user);
+  if (req.session.lastAddedEmail) {
+    lastAddedEmail = req.session.lastAddedEmail;
+    req.session["lastAddedEmail"] = null;
+  }
 
-  // let partialString;
+  let partialString;
 
-  // if (show_form) {
-  //   partialString = "dashboards/remove-form";
-  // } else {
-  //   partialString = "dashboards/remove-dashboard";
-  // }
+  if (show_form) {
+    partialString = "dashboards/remove-form";
+  } else {
+    partialString = "dashboards/remove-dashboard";
+  }
 
-  // res.render("dashboards", {
-  //   title: req.fluentFormat("Firefox Monitor"),
-  //   csrfToken: req.csrfToken(),
-  //   lastAddedEmail,
-  //   verifiedEmails,
-  //   unverifiedEmails,
-  //   countries,
-  //   usStates,
-  //   userHasSignedUpForRemoveData,
-  //   removeData,
-  //   removeAcctInfo,
-  //   supportedLocalesIncludesEnglish,
-  //   whichPartial: partialString,
-  //   experimentFlags,
-  //   utmOverrides,
-  // });
+  res.render("dashboards", {
+    title: req.fluentFormat("Firefox Monitor"),
+    csrfToken: req.csrfToken(),
+    lastAddedEmail,
+    verifiedEmails,
+    unverifiedEmails,
+    countries,
+    usStates,
+    userHasSignedUpForRemoveData,
+    removeData,
+    removeAcctInfo,
+    supportedLocalesIncludesEnglish,
+    whichPartial: partialString,
+    experimentFlags,
+    utmOverrides,
+  });
+}
+
+async function getRemovePreviewImage(req, res) {
+  //if we have a URL, grab a screenshot
+  console.log("preview req", req.body);
+  const { removalURL, itemID } = req.body;
+  console.log("get url", removalURL);
+  const renderStream = webshot(removalURL);
+  let imgStream = "data:image/png;base64,";
+  renderStream.on("data", function (data) {
+    imgStream += Buffer.from(data).toString("base64");
+  });
+
+  renderStream.on("end", function () {
+    console.log("stream end, ID: ", itemID);
+    return res.json({ src: imgStream, itemID: itemID });
+  });
 }
 
 async function getRemoveConfirmationPage(req, res) {
@@ -2132,4 +2112,5 @@ module.exports = {
   getRemoveStats,
   getRemoveStatsUser,
   createRemoveHashWaitlist,
+  getRemovePreviewImage,
 };

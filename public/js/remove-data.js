@@ -365,6 +365,7 @@ function handleFormSubmit(e) {
     return;
   }
   const formData = new FormData($form);
+  console.log("formData", formData);
 
   e.preventDefault(); //if valid, prevent submission and post data
 
@@ -402,6 +403,12 @@ function addRemoveDashListeners() {
   document
     .querySelectorAll(".remove-filter-key-button")
     .forEach(addStatusFilterListener);
+  document
+    .querySelectorAll(".js-remove-link-preview")
+    .forEach(addRemoveLinkPreviewListener);
+  document
+    .querySelectorAll(".js-modal-preview-trigger")
+    .forEach(addRemovePreviewModalTriggerListener);
 }
 
 function addRemoveDashDetailsToggle(el) {
@@ -410,6 +417,65 @@ function addRemoveDashDetailsToggle(el) {
 
 function addStatusFilterListener(el) {
   el.addEventListener("click", onStatusFilterToggle);
+}
+
+function addRemoveLinkPreviewListener(el) {
+  el.addEventListener("click", onRemoveLinkPreviewClick);
+}
+
+function showPreviewImgLoader($listItem) {
+  const $imgContainer = $listItem.querySelector(
+    ".remove-dash-result-link-img-container"
+  );
+  $imgContainer.innerHTML = "";
+  const previewImage = document.createElement("img");
+  previewImage.src = "/img/removal/remove-preview-loader.gif";
+  $imgContainer.appendChild(previewImage);
+}
+
+async function onRemoveLinkPreviewClick(e) {
+  e.preventDefault();
+  const $listItem = e.currentTarget.closest(".remove-dash-results-list-item");
+  showPreviewImgLoader($listItem);
+  const itemID = $listItem.dataset.id;
+  const removalURL = e.currentTarget.closest(".remove-dash-results-detail")
+    .dataset.url;
+
+  const data = { removalURL: removalURL, itemID: itemID };
+
+  fetch("/user/remove-get-preview-image", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+    .then((resp) => {
+      console.log("resp", resp);
+      return resp.json();
+    })
+    .then((data) => {
+      const $closestContainer = document.querySelector(
+        `.remove-dash-results-list-item[data-id="${data.itemID}"]`
+      );
+      const $imgContainer = $closestContainer.querySelector(
+        ".remove-dash-result-link-img-container"
+      );
+      $imgContainer.innerHTML = "";
+      const previewImage = document.createElement("img");
+      previewImage.src = data.src;
+      $imgContainer.appendChild(previewImage);
+    })
+    .catch((error) => {
+      console.error("error with form submission", error);
+    });
+}
+
+function addRemovePreviewModalTriggerListener(el) {
+  el.addEventListener("click", onRemovePreviewTriggerClick);
+}
+
+function onRemovePreviewTriggerClick(e) {
+  const imgSrc = e.currentTarget.querySelector("img").src;
+  document.querySelector(".modal__remove-preview-image").src = imgSrc;
 }
 
 function onRemoveDashDetailsToggle(e) {

@@ -2,6 +2,7 @@
   class="remove-dash-results-list-item drop-shadow flx flx-col"
   data-status="{{this.status}}"
   data-step="{{this.current_step}}"
+  data-id="{{this.id}}"
 >
   <div class="remove-dash-results-summary-container flx space-between">
     <div class="remove-dash-results-site-container flx flx-cntr">
@@ -68,11 +69,12 @@
     </div>
   </div>
   <div class="remove-dash-results-details-container flx">
-    <div class="remove-dash-result-link-img-container">
-      {{#if this.imgStream}}
-        <img src="{{this.imgStream}}">
-      {{/if}}
+    {{#ifCompare this.status "===" "ACTIVE"}}
+    <a role="button" href="#" class="js-modal-preview-trigger" data-micromodal-trigger="modal-remove-preview-image">
+    <div class="remove-dash-result-link-img-container flx jst-cntr">
     </div>
+    </a>
+    {{/ifCompare}}
     <ul class="remove-dash-results-details-list">
       {{#if this.update_status}}
         <li class="remove-dash-results-details-item mobile-only">
@@ -106,17 +108,24 @@
           {{getString "remove-result-link"}}
           {{> removal/removal-question-trigger modal="modal-remove-link" alt="About result link"}}
         </p>
-        <div class="remove-dash-results-detail flx">
+        <div class="remove-dash-results-detail flx" data-url="{{this.url.[0]}}">
           <ul>
-          {{#each this.url}}
+          
           <li class="remove-dash-results-link-item">
             <a
               class="remove-dash-results-detail-link break-word"
-              href="{{this}}"
+              href="{{this.url.[0]}}"
               target="_blank"
-            >{{getString "remove-result-link-title"}} {{incrementedIndex @index}}</a>
+            >{{getString "remove-result-link-title"}}</a>
           </li>
-          {{/each}}
+          {{#ifCompare this.status "===" "ACTIVE"}}
+          <li class="remove-dash-results-link-item">
+            <a
+              class="remove-dash-results-detail-link js-remove-link-preview break-word"
+              href="#"
+            >{{getString "remove-result-link-preview"}}</a>
+          </li>
+          {{/ifCompare}}
           </ul>
         </div>
       </li>

@@ -41,6 +41,7 @@ const {
   getRemoveStats,
   getRemoveStatsUser,
   createRemoveHashWaitlist,
+  getRemovePreviewImage,
 } = require("../controllers/user");
 
 const router = express.Router();
@@ -262,11 +263,19 @@ router.get(
   requireSessionUser,
   asyncMiddleware(getRemoveStatsUser)
 );
+
 router.get(
   "/remove-hash-waitlist",
   urlEncodedParser,
   requireSessionUser,
   asyncMiddleware(createRemoveHashWaitlist)
+);
+
+router.post(
+  "/remove-get-preview-image",
+  jsonParser,
+  requireSessionUser,
+  asyncMiddleware(getRemovePreviewImage)
 );
 
 module.exports = router;

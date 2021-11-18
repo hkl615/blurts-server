@@ -19,6 +19,15 @@
   border-radius: 4px;
   overflow-y: auto;
   box-sizing: border-box;
+  #modal-remove-preview-image & {
+    max-width: 80vw;
+    max-height: 80vh;
+  }
+}
+
+.modal__remove-preview-image {
+  width: 100%;
+  max-width: 1024px;
 }
 
 .modal__status-container {
